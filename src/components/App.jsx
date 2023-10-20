@@ -13,14 +13,16 @@ export class App extends Component{
     page: 1,
     photos: [],
     loading: false,
-    error: null
+    error: null,
+    totalHits: 12
   }
 
   
   onSubmit = (value) => {
     this.setState({
       searchValue: value,
-      page: 1
+      page: 1,
+      photos: []
     }
     )
   }
@@ -36,7 +38,8 @@ export class App extends Component{
     try{
       this.setState({loading: true})
       const data = await getSearchImg(this.state.searchValue, this.state.page)
-      this.setState({photos: [...prevState.photos, ...data.hits]})
+      this.setState({photos: [...this.state.photos, ...data.hits],
+      totalHits: data.totalHits})
     }catch (error){
       this.setState({error: true})
     }finally{
@@ -44,16 +47,19 @@ export class App extends Component{
     }          
     }
   }
-
 render() {
-
+let button;
+if(this.state.photos.length !== 0 && this.state.totalHits >= this.state.photos.length + 1){
+ button = <LoadMoreButton onLoadMoreClick={this.onLoadMoreClick}>Load more</LoadMoreButton>
+}
     return <>
     <Searchbar onSubmit={this.onSubmit}></Searchbar>
     {this.state.error && (<ErrorMessage/>)}
 { this.state.photos.length !== 0 && (<ImageGallery photos={this.state.photos}>
     </ImageGallery>)}
     {this.state.loading && <Loader/>}
-    { this.state.photos.length !== 0 && (<LoadMoreButton onLoadMoreClick={this.onLoadMoreClick}>Load more</LoadMoreButton>)}
+    {button}
+    {/* { this.state.photos.length !== 0 || this.state.totalHits >= this.state.photos.length && (<LoadMoreButton onLoadMoreClick={this.onLoadMoreClick}>Load more</LoadMoreButton>)} */}
     <ToastContainer autoClose={3000}/>
     </>
   }
